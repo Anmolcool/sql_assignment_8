@@ -1,0 +1,161 @@
+-- A-1: CREATE A FUNCTION CALC TO PERFORM THE SPECIFIED OPERATION ON THE  GIVEN TWO NUMBERS .
+
+-- A-2: FUNCTION TO GENERATE THE EMAIL ID BY ACCEPTING NAME & EID. EMAIL  SHOULD CONTAIN 1ST CHARACTER OF 1ST last NAME ,  First NAME, LAST  3 DIGITS OF EMP ID FOLLOWED BY @Learnbay.co;
+
+-- A-3: FUNCTION TO RETURN EID, NAME, DESI, DEPT ,SALARY OF THE EMPLOYEES OF A  SPECIFIED DEPARTMENT.
+
+-- A-4: FUNCTION TO DISPLAY THE NAME , DEPT . DESI , CITY OF THE EMPLOYEES WHO  HAVE THE BIRTHDAY IN THE CURRENT MONTH.
+
+-- A-5: FUNCTION TO DISPLAY THE NAME, DEPT & DOJ OF EMPLOYEES WHO HAVE  COMPLETED 5 YEARS IN THE COMPANY.
+
+
+create database assignment;
+use assignment;
+DELIMITER //
+CREATE FUNCTION msum (a INT, b INT)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE d INT;
+    SET d = a + b;
+    RETURN c;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION makesu (a INT, b INT)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE c INT;
+    SET c = a + b;
+    RETURN c;
+END //
+DELIMITER ;
+
+select makesum(3, 5);
+
+
+
+
+select mysum(2, 3);
+
+select *from emp;
+-- table valued dunction
+select *from emp;
+select *from emp_sal;
+delimiter //
+create function getemp( dep varchar(50))
+returns table
+	return (select *from emp where dept = dep);
+
+delimiter ;
+
+select getemp ('admin');
+
+DELIMITER //
+
+CREATE PROCEDURE gete(IN dep VARCHAR(50))
+BEGIN
+    SELECT * FROM emp_sal WHERE dept = dep;
+END //
+
+DELIMITER ;
+
+call getem('ops');
+
+
+-- A-2: FUNCTION TO GENERATE THE EMAIL ID BY ACCEPTING NAME & EID. EMAIL  SHOULD CONTAIN 1ST CHARACTER OF 1ST last NAME ,  First NAME, LAST  3 DIGITS OF EMP ID FOLLOWED BY @Learnbay.co;
+-- 1ST CHARACTER OF 1ST last NAME ,  First NAME, LAST  3 DIGITS OF EMP ID FOLLOWED BY @Learnbay.co
+
+DELIMITER \\
+create function email_crt(name varchar(30), EID varchar(5))
+returns varchar(20)
+DETERMINISTIC
+begin
+		return concat ( 
+						upper( substring(name, 1, 1)), 	
+						upper (substring(name, instr(name, ' ') + 1, 1)), 
+						upper(right(EID, 3)),
+						'@Learnbay.co'
+						);
+end \\
+DELIMITER ;
+select email_crt(desi, EID) from emp_sal;
+
+-- A-3: FUNCTION TO RETURN EID, NAME, DESI, DEPT ,SALARY OF THE EMPLOYEES OF A  SPECIFIED DEPARTMENT.
+DELIMITER //
+
+CREATE FUNCTION get_emp_details(dept_name VARCHAR(30))
+RETURNS VARCHAR(100)
+DETERMINISTIC
+BEGIN
+    DECLARE emp_details VARCHAR(100);
+
+    SELECT CONCAT(EID, ' ', NAME, ' ', DESI, ' ', DEPT, ' ', salary)
+    INTO emp_details
+    FROM employees
+    WHERE DEPT = dept_name;
+
+    RETURN emp_details;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+-- A-3: FUNCTION TO RETURN EID, NAME, DESI, DEPT ,SALARY OF THE EMPLOYEES OF A  SPECIFIED DEPARTMENT.
+DELIMITER //
+CREATE PROCEDURE get_emp_d(IN dept_name VARCHAR(30))
+BEGIN
+    SELECT E.EID, E.NAME, Es.DESI, ES.DEPT, Es.SALARY
+    FROM emp E
+    inner join emp_sal Es 
+    WHERE Es.DEPT = dept_name;
+END //
+
+DELIMITER ;
+select *from emp_sal;
+call get_emp_d('ops');
+
+
+-- A-4: FUNCTION TO DISPLAY THE NAME , DEPT . DESI , CITY OF THE EMPLOYEES WHO  HAVE THE BIRTHDAY IN THE CURRENT MONTH.
+delimiter \\
+create procedure emp_birthday(in dep varchar(30))
+begin
+	select E.NAME, Es.dept, Es.dept, Es.desi, E.city
+	from emp E 
+	inner join emp_sal Es
+	where month(str_to_date(E.dob, '%d-%m-%Y')) = month(current_date())
+	and Es.DEPT = dep;
+end \\
+delimiter ;
+
+call emp_birthday('ops');
+
+
+-- A-5: FUNCTION TO DISPLAY THE NAME, DEPT & DOJ OF EMPLOYEES WHO HAVE  COMPLETED 5 YEARS IN THE COMPANY.
+delimiter //
+create procedure get_det(in dep varchar(20))
+begin
+	select E.name, Es.dept, E.doj
+	from emp E
+	inner join emp_sal Es
+	where datediff(current_date(), str_to_date(E.doj, '%d-%m-%Y'))/365.25 > 5; 
+end //
+delimiter ;
+
+call get_det('ops');
+
+delimiter //
+create function get_det(dep varchar(20))
+returns varchar(20)
+begin
+	return 
+    E.name, Es.dept, E.doj
+	from emp E
+	inner join emp_sal Es
+	where datediff(current_date(), str_to_date(E.doj, '%d-%m-%Y'))/365.25 > 5; 
+end //
+delimiter ;
+
+call get_det('ops');
